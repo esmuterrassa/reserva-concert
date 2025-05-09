@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <title>Reserva d'entrades - Concert Final de Curs</title>
+  <style>
+    body { background-color: #f4f4f4; text-align: center; font-family: Arial, sans-serif; }
+    #auditorium-container { position: relative; width: 700px; height: 600px; margin: 0 auto; background: #ddd; border: 1px solid #999; }
+    .seat { position: absolute; width: 24px; height: 24px; border-radius: 50%; background: green; border: 2px solid black; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; }
+    .reserved { background-color: red !important; pointer-events: none; }
+    .selected { background-color: orange !important; }
+    #controls { margin: 20px; }
+    #controls input, #controls textarea { padding: 8px; font-size: 14px; margin: 5px; width: 250px; }
+    button { padding: 10px 20px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h2>Reserva d'Entrades - Concert Final de Curs 2024/25</h2>
+  <div id="controls">
+    <input type="email" id="email" placeholder="Adreça electrònica" required><br>
+    <input type="text" id="nom" placeholder="Nom i cognoms" required><br>
+    <input type="tel" id="telefon" placeholder="Telèfon de contacte" required><br>
+    <input type="number" id="quantitat" placeholder="Nº d'entrades" min="1" max="10" required><br>
+    <textarea id="observacions" placeholder="Observacions"></textarea><br>
+    <button onclick="reservarSeleccionats()">Reservar</button>
+  </div>
+  <div id="auditorium-container"></div>
+  <script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzkEi_jI6sQa98_GptTEuVl1FPtu_oIEzDLpRDUs0BhJvP3EOCCOHnlCo18i6AKclvA/exec';
+    let reservedSeats = [];
+    fetch(scriptURL)
+      .then(response => response.json())
+      .then(data => {
+        reservedSeats = Array.isArray(data) ? data : [];
+        reservedSeats.forEach(id => {
+          const el = document.querySelector(`[data-seat='${id}']`);
+          if (el) el.classList.add('reserved');
+        });
+      });
+    document.addEventListener("DOMContentLoaded", () => {
+      const c = document.getElementById("auditorium-container");
+      const rows = 17, cols = 10;
+      for (let r = rows; r >= 1; r--) {
+        const top = 32 + (rows - r) * 32;
+        const fila = "F" + r;
+        for (let i = 0; i < cols; i++) {
+          const l = (i + 1) * 2, li = 300 - i * 26;
+          const ri = i * 2 + 1, re = 430 + i * 26;
+          if (!(r === 1 && (l === 20 || ri === 19))) {
+            const seatL = document.createElement("div");
+            seatL.className = "seat"; seatL.textContent = l;
+            seatL.dataset.seat = `${fila}-L-${l}`;
+            seatL.style.top = top + "px"; seatL.style.left = li + "px";
+            c.appendChild(seatL);
+            const seatR = document.createElement("div");
+            seatR.className = "seat"; seatR.textContent = ri;
+            seatR.dataset.seat = `${fila}-R-${ri}`;
+            seatR.style.top = top + "px"; seatR.style.left = re + "px";
+            c.appendChild(seatR);
+          }
+        }
+        const label = document.createElement("div");
+        label.style.position = "absolute";
+        label.style.left = "390px";
+        label.style.top = (top + 4) + "px";
+        label.style.fontSize = "12px";
+        label.style.fontWeight = "bold";
+        label.textContent = r;
+        c.appendChild(label);
+      }
+      document.querySelectorAll('.seat').forEach(seat => {
+        seat.addEventListener('click', () => {
+          if (!seat.classList.contains('reserved')) {
+            const max = parseInt(document.getElementById('quantitat').value || '0');
+            const selected = document.querySelectorAll('.seat.selected').length;
+            seat.classList.toggle('selected', !seat.classList.contains('selected') && selected < max);
+          }
+        });
+      });
+    });
+    function reservarSeleccionats() {
+      const email = document.getElementById('email').value.trim();
+      const nom = document.getElementById('nom').value.trim();
+      const tel = document.getElementById('telefon').value.trim();
+      const q = parseInt(document.getElementById('quantitat').value.trim());
+      const obs = document.getElementById('observacions').value.trim();
+      const seleccionats = Array.from(document.querySelectorAll('.seat.selected'));
+      if (!email || !nom || !tel || !q || seleccionats.length !== q) {
+        alert("Revisa les dades i selecciona exactament " + q + " localitats."); return;
+      }
+      seleccionats.forEach(seat => {
+        const data = {
+          "adreça electrònica": email,
+          "Nom i cognoms": nom,
+          "Telèfon": tel,
+          "Nº d'entrades": q,
+          "Observacions": obs,
+          "asiento": seat.dataset.seat
+        };
+        fetch(scriptURL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(() => {
+          seat.classList.remove('selected');
+          seat.classList.add('reserved');
+        });
+      });
+      ['email','nom','telefon','quantitat','observacions'].forEach(id => document.getElementById(id).value = "");
+      document.querySelectorAll('.seat.selected').forEach(seat => seat.classList.remove('selected'));
+      alert("Reserva enviada correctament.");
+    }
+  </script>
+</body>
+</html>
