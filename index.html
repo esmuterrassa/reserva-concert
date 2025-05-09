@@ -2,15 +2,45 @@
 <html lang="ca">
 <head>
   <meta charset="UTF-8">
-  <title>Reserva d'entrades - Concert Final de Curs</title>
+  <title>Reserva d'entrades - Concert Final de Curs </title>
   <style>
-    body { background-color: #f4f4f4; text-align: center; font-family: Arial, sans-serif; }
-    #auditorium-container { position: relative; width: 700px; height: 600px; margin: 0 auto; background: #ddd; border: 1px solid #999; }
-    .seat { position: absolute; width: 24px; height: 24px; border-radius: 50%; background: green; border: 2px solid black; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; }
+    body {
+      background-color: #f4f4f4;
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+    #auditorium-container {
+      position: relative;
+      width: 700px;
+      height: 600px;
+      margin: 0 auto;
+      background-color: #ddd;
+      border: 1px solid #999;
+    }
+    .seat {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: green;
+      border: 2px solid black;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: white;
+    }
     .reserved { background-color: red !important; pointer-events: none; }
     .selected { background-color: orange !important; }
     #controls { margin: 20px; }
-    #controls input, #controls textarea { padding: 8px; font-size: 14px; margin: 5px; width: 250px; }
+    #controls input, #controls textarea {
+      padding: 8px;
+      font-size: 14px;
+      margin: 5px;
+      width: 250px;
+    }
     button { padding: 10px 20px; font-size: 16px; }
   </style>
 </head>
@@ -24,9 +54,12 @@
     <textarea id="observacions" placeholder="Observacions"></textarea><br>
     <button onclick="reservarSeleccionats()">Reservar</button>
   </div>
-  <div id="auditorium-container"></div>
+  <div id="auditorium-container" style="margin-bottom: 20px;"></div>
+  <div style="position: relative; height: 40px;">
+    <div style="position:absolute; left:50%; transform:translateX(-50%); top:10px; font-weight:bold; font-size:20px;">ESCENARI</div>
+  </div>
   <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzkEi_jI6sQa98_GptTEuVl1FPtu_oIEzDLpRDUs0BhJvP3EOCCOHnlCo18i6AKclvA/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycby8ivwj4Hju1zHeJcBuFZta2hyc_LF6_4cCoKbjCA1TfilKa6KVvsD7X645eT_3NyXP/exec';
     let reservedSeats = [];
     fetch(scriptURL)
       .then(response => response.json())
@@ -37,26 +70,34 @@
           if (el) el.classList.add('reserved');
         });
       });
+
     document.addEventListener("DOMContentLoaded", () => {
-      const c = document.getElementById("auditorium-container");
-      const rows = 17, cols = 10;
-      for (let r = rows; r >= 1; r--) {
-        const top = 32 + (rows - r) * 32;
-        const fila = "F" + r;
-        for (let i = 0; i < cols; i++) {
-          const l = (i + 1) * 2, li = 300 - i * 26;
-          const ri = i * 2 + 1, re = 430 + i * 26;
-          if (!(r === 1 && (l === 20 || ri === 19))) {
+      const container = document.getElementById("auditorium-container");
+      const rowCount = 17;
+      const seatsPerSide = 10;
+      for (let row = rowCount; row >= 1; row--) {
+        const top = 32 + (rowCount - row) * 32;
+        const fila = "F" + row;
+        for (let i = 0; i < seatsPerSide; i++) {
+          const seatNumL = (i + 1) * 2;
+          const seatNumR = i * 2 + 1;
+          const left = 300 - i * 26;
+          const right = 430 + i * 26;
+          if (!(row === 1 && (seatNumL === 20 || seatNumR === 19))) {
             const seatL = document.createElement("div");
-            seatL.className = "seat"; seatL.textContent = l;
-            seatL.dataset.seat = `${fila}-L-${l}`;
-            seatL.style.top = top + "px"; seatL.style.left = li + "px";
-            c.appendChild(seatL);
+            seatL.className = "seat";
+            seatL.textContent = seatNumL;
+            seatL.dataset.seat = `${fila}-L-${seatNumL}`;
+            seatL.style.top = top + "px";
+            seatL.style.left = left + "px";
+            container.appendChild(seatL);
             const seatR = document.createElement("div");
-            seatR.className = "seat"; seatR.textContent = ri;
-            seatR.dataset.seat = `${fila}-R-${ri}`;
-            seatR.style.top = top + "px"; seatR.style.left = re + "px";
-            c.appendChild(seatR);
+            seatR.className = "seat";
+            seatR.textContent = seatNumR;
+            seatR.dataset.seat = `${fila}-R-${seatNumR}`;
+            seatR.style.top = top + "px";
+            seatR.style.left = right + "px";
+            container.appendChild(seatR);
           }
         }
         const label = document.createElement("div");
@@ -65,8 +106,8 @@
         label.style.top = (top + 4) + "px";
         label.style.fontSize = "12px";
         label.style.fontWeight = "bold";
-        label.textContent = r;
-        c.appendChild(label);
+        label.textContent = row;
+        container.appendChild(label);
       }
       document.querySelectorAll('.seat').forEach(seat => {
         seat.addEventListener('click', () => {
@@ -78,25 +119,30 @@
         });
       });
     });
+
     function reservarSeleccionats() {
       const email = document.getElementById('email').value.trim();
       const nom = document.getElementById('nom').value.trim();
-      const tel = document.getElementById('telefon').value.trim();
-      const q = parseInt(document.getElementById('quantitat').value.trim());
-      const obs = document.getElementById('observacions').value.trim();
+      const telefon = document.getElementById('telefon').value.trim();
+      const quantitat = parseInt(document.getElementById('quantitat').value.trim());
+      const observacions = document.getElementById('observacions').value.trim();
       const seleccionats = Array.from(document.querySelectorAll('.seat.selected'));
-      if (!email || !nom || !tel || !q || seleccionats.length !== q) {
-        alert("Revisa les dades i selecciona exactament " + q + " localitats."); return;
+
+      if (!email || !nom || !telefon || !quantitat || seleccionats.length !== quantitat) {
+        alert("Revisa les dades del formulari i selecciona exactament " + quantitat + " localitats.");
+        return;
       }
+
       seleccionats.forEach(seat => {
         const data = {
           "adreça electrònica": email,
           "Nom i cognoms": nom,
-          "Telèfon": tel,
-          "Nº d'entrades": q,
-          "Observacions": obs,
-          "asiento": seat.dataset.seat
+          "Telèfon": telefon,
+          "Nº d'entrades": quantitat,
+          "asiento": seat.dataset.seat,
+          "Observacions": observacions
         };
+
         fetch(scriptURL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -108,10 +154,23 @@
           seat.classList.add('reserved');
         });
       });
-      ['email','nom','telefon','quantitat','observacions'].forEach(id => document.getElementById(id).value = "");
+
+      document.getElementById('email').value = "";
+      document.getElementById('nom').value = "";
+      document.getElementById('telefon').value = "";
+      document.getElementById('quantitat').value = "";
+      document.getElementById('observacions').value = "";
       document.querySelectorAll('.seat.selected').forEach(seat => seat.classList.remove('selected'));
-      alert("Reserva enviada correctament.");
+
+      alert("Reserva enviada correctament. Rebràs un correu de confirmació.");
     }
   </script>
+  <div style="margin-top: 20px;">
+    <img src="logo_esmut_para_poster-removebg-preview.png" alt="Logo ESMUT" style="height: 80px;"><br>
+    <div style="font-size: 14px; margin-top: 8px;">
+      C/ Ramón y Cajal, 60-62 &nbsp; 08222 Terrassa<br>
+      Tel.: 931 779 257 &nbsp;&nbsp; e-mail: info@esmut.cat
+    </div>
+  </div>
 </body>
 </html>
