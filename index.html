@@ -262,30 +262,29 @@ document.getElementById("reservationForm").addEventListener("submit", async func
 
   if(selectedSeats.length === 0) return;
 
-  const payload = {
-    eventId: EVENT_ID,
-    name: document.getElementById("name").value.trim(),
-    email: document.getElementById("email").value.trim(),
-    phone: document.getElementById("phone").value.trim(),
-    seats: selectedSeats.map(function(s){ return s.id; })
-  };
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
 
-  if(!payload.name || !payload.email){
+  if(!name || !email){
     showStatus("Cal indicar nom i correu electrònic.", "error");
     return;
   }
 
-  submitButton.disabled = true;
+  const params = new URLSearchParams({
+    action: "reserve",
+    eventId: EVENT_ID,
+    name: name,
+    email: email,
+    phone: phone,
+    seats: selectedSeats.map(s => s.id).join(",")
+  });
+
   showStatus("Enviant reserva...", "ok");
+  submitButton.disabled = true;
 
-  try{
-    await fetch(API_URL, {
-      method: "POST",
-      mode: "no-cors",
-      body: JSON.stringify(payload)
-    });
-
-    showStatus("Reserva enviada. Actualitzant plànol...", "ok");
+  try {
+    await fetch(API_URL + "?" + params.toString(), { method: "GET" });
 
     selectedSeats = [];
     document.getElementById("reservationForm").reset();
@@ -294,9 +293,9 @@ document.getElementById("reservationForm").addEventListener("submit", async func
       await loadReservations();
       updateSelectedList();
       showStatus("Reserva confirmada correctament.", "ok");
-    }, 2000);
+    }, 1500);
 
-  } catch(e){
+  } catch(e) {
     showStatus("Error de connexió. Torna-ho a provar.", "error");
     submitButton.disabled = false;
   }
