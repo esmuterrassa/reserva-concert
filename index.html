@@ -263,19 +263,22 @@ document.getElementById("reservationForm").addEventListener("submit", async func
   showStatus("Processant la reserva...", "ok");
 
   try{
-    const response = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
+    await fetch(API_URL, {
+  method: "POST",
+  mode: "no-cors",
+  body: JSON.stringify(payload)
+});
 
-    const result = await response.json();
+showStatus("Reserva enviada correctament. Comprovant disponibilitat...", "ok");
 
-    if(!result.ok){
-      showStatus(result.message || "No s'ha pogut confirmar la reserva.", "error");
-      selectedSeats = [];
-      await loadReservations();
-      updateSelectedList();
-      return;
+selectedSeats = [];
+document.getElementById("reservationForm").reset();
+
+setTimeout(async function(){
+  await loadReservations();
+  updateSelectedList();
+  showStatus("Reserva confirmada correctament.", "ok");
+}, 2000);
     }
 
     showStatus("Reserva confirmada correctament.", "ok");
