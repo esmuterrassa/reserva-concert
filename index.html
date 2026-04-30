@@ -13,9 +13,10 @@ header p{margin:5px 0}
 main{max-width:1250px;margin:auto;padding:24px}
 .layout{display:grid;grid-template-columns:1fr 340px;gap:24px}
 .card{background:white;border-radius:18px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
-.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px;font-size:14px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;font-size:14px}
 .legend span{display:flex;align-items:center;gap:6px}
 .dot{width:16px;height:16px;border-radius:50%;display:inline-block}
+#counter{margin-bottom:14px;font-weight:bold}
 .auditorium{overflow-x:auto}
 .seat-map{display:flex;flex-direction:column;gap:10px;min-width:900px}
 .row{display:grid;grid-template-columns:60px 1fr 90px 1fr 60px;align-items:center;gap:10px}
@@ -24,7 +25,6 @@ main{max-width:1250px;margin:auto;padding:24px}
 .seat{width:34px;height:32px;border:none;border-radius:8px;background:#22c55e;color:white;font-weight:bold;cursor:pointer}
 .seat.selected{background:#2563eb;outline:3px solid #111827}
 .seat.reserved{background:#ef4444;cursor:not-allowed}
-.seat.blocked{background:#9ca3af;cursor:not-allowed}
 .seat.pmr{background:#0f65b7}
 .aisle{height:36px}
 .stage{width:70%;margin:30px auto 0;background:#f5e85c;text-align:center;font-size:36px;font-weight:900;padding:24px;border-radius:50px;transform:rotate(2deg)}
@@ -59,7 +59,8 @@ button.submit:disabled{background:#9ca3af;cursor:not-allowed}
 <span><i class="dot" style="background:#ef4444"></i>Reservat</span>
 <span><i class="dot" style="background:#9ca3af"></i>Bloquejat</span>
 </div>
- <div id="counter" style="margin-bottom:10px;font-weight:bold;"></div> 
+
+<div id="counter"></div>
 
 <div class="auditorium">
 <div id="seatMap" class="seat-map"></div>
@@ -104,8 +105,7 @@ const submitButton = document.getElementById("submitButton");
 const statusEl = document.getElementById("status");
 
 let selectedSeats = [];
-let reservedSeats = new Set();
-let blockedSeats = new Set();
+let reservedSeats = [];
 
 function getLeftSeats(row){
   if(row===1) return [18,16,14,12,10,8,6,4,2];
@@ -143,13 +143,8 @@ function createSeatButton(row, seat){
     btn.classList.add("pmr");
   }
 
-  if(reservedSeats.has(id)){
+  if(reservedSeats.includes(id)){
     btn.classList.add("reserved");
-    btn.disabled = true;
-  }
-
-  if(blockedSeats.has(id)){
-    btn.classList.add("blocked");
     btn.disabled = true;
   }
 
@@ -203,6 +198,8 @@ function renderSeatMap(){
 
     seatMapEl.appendChild(rowEl);
   }
+
+  updateCounter();
 }
 
 function toggleSeat(id, row, seat, btn){
@@ -216,13 +213,13 @@ function toggleSeat(id, row, seat, btn){
       showStatus("Només es poden seleccionar " + MAX_SEATS_PER_RESERVATION + " seients per reserva.", "error");
       return;
     }
+
     selectedSeats.push({id:id,row:row,seat:seat});
     btn.classList.add("selected");
   }
 
   updateSelectedList();
   showStatus("Seients seleccionats: " + selectedSeats.length, "ok");
-}
 }
 
 function updateSelectedList(){
@@ -239,6 +236,12 @@ function updateSelectedList(){
   submitButton.disabled = false;
 }
 
+function updateCounter(){
+  const total = document.querySelectorAll(".seat").length;
+  const reserved = document.querySelectorAll(".seat.reserved").length;
+  document.getElementById("counter").textContent = "Places ocupades: " + reserved + " / " + total;
+}
+
 function showStatus(message, type){
   statusEl.className = "status " + type;
   statusEl.textContent = message;
@@ -249,18 +252,15 @@ async function loadReservations(){
     const response = await fetch(API_URL + "?eventId=" + encodeURIComponent(EVENT_ID));
     const data = await response.json();
 
-    reservedSeats = new Set(data.reserved || []);
-    blockedSeats = new Set(data.blocked || []);
+    reservedSeats = data.reserved || [];
 
     renderSeatMap();
-
-    // 👇 AÑADIR AQUÍ
-    updateCounter();
-
   } catch(e){
     console.log("No s'han pogut carregar les reserves", e);
+    renderSeatMap();
   }
 }
+
 document.getElementById("reservationForm").addEventListener("submit", async function(e){
   e.preventDefault();
 
@@ -281,18 +281,18 @@ document.getElementById("reservationForm").addEventListener("submit", async func
     name: name,
     email: email,
     phone: phone,
-    seats: selectedSeats.map(s => s.id).join(",")
+    seats: selectedSeats.map(function(s){ return s.id; }).join(",")
   });
 
   showStatus("Enviant reserva...", "ok");
   submitButton.disabled = true;
 
-  try {
+  try{
     const response = await fetch(API_URL + "?" + params.toString());
     const result = await response.json();
 
     if(!result.ok){
-      showStatus("Error en la reserva.", "error");
+      showStatus("No s'ha pogut confirmar la reserva.", "error");
       submitButton.disabled = false;
       return;
     }
@@ -305,14 +305,13 @@ document.getElementById("reservationForm").addEventListener("submit", async func
 
     showStatus("Reserva confirmada correctament.", "ok");
 
-  } catch(e) {
+  } catch(e){
     showStatus("Error de connexió.", "error");
     submitButton.disabled = false;
   }
 });
 
 loadReservations();
-  // Actualización automática cada 5 segundos
 setInterval(loadReservations, 5000);
 </script>
 
