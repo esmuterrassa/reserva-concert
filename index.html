@@ -1,324 +1,99 @@
 <!DOCTYPE html>
 <html lang="ca">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reserva de seients | ESMUT</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reserva de seients | ESMUT</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f6f1ef;
-      color: #111827;
-    }
-
-    header {
-      background: #111827;
-      color: white;
-      text-align: center;
-      padding: 26px 16px;
-    }
-
-    header h1 {
-      margin: 0 0 8px;
-      font-size: 28px;
-    }
-
-    header h2 {
-      margin: 0 0 10px;
-      font-size: 18px;
-      font-weight: 400;
-    }
-
-    header p {
-      margin: 4px 0;
-      font-size: 16px;
-    }
-
-    main {
-      max-width: 1250px;
-      margin: 0 auto;
-      padding: 24px 16px 60px;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 24px;
-      align-items: start;
-    }
-
-    .card {
-      background: white;
-      border-radius: 18px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-      padding: 20px;
-    }
-
-    .legend {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-      font-size: 14px;
-    }
-
-    .legend span {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .dot {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    .auditorium {
-      overflow-x: auto;
-      padding: 10px 0 18px;
-    }
-
-    .seat-map {
-  min-width: 900px;
-  display: flex;
-  flex-direction: column;
-      gap: 13px;
-      align-items: center;
-    }
-
-    .row {
-      display: grid;
-      grid-template-columns: 60px 1fr 120px 1fr 60px;
-      gap: 14px;
-      align-items: center;
-      width: 100%;
-    }
-
-    .row-label {
-      font-weight: 700;
-      text-align: center;
-      font-size: 16px;
-    }
-
-    .side {
-      display: flex;
-      gap: 7px;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .seat {
-      width: 34px;
-      height: 32px;
-      border: none;
-      border-radius: 8px;
-      background: #22c55e;
-      color: white;
-      font-weight: 700;
-      font-size: 13px;
-      cursor: pointer;
-      box-shadow: inset 0 -4px rgba(0,0,0,0.22), 0 2px 4px rgba(0,0,0,0.18);
-    }
-
-    .seat:hover:not(:disabled) {
-      transform: translateY(-1px);
-    }
-
-    .seat.selected {
-      background: #2563eb;
-      outline: 3px solid #111827;
-    }
-
-    .seat.reserved {
-      background: #ef4444;
-      cursor: not-allowed;
-    }
-
-    .seat.blocked {
-      background: #9ca3af;
-      cursor: not-allowed;
-    }
-
-    .seat.pmr {
-      background: #0f65b7;
-      font-size: 11px;
-      line-height: 1.1;
-    }
-
-    .aisle {
-      height: 34px;
-    }
-
-    .stage {
-      width: min(520px, 85%);
-      margin: 28px auto 0;
-      background: #f5e85c;
-      color: #111;
-      text-align: center;
-      font-size: 40px;
-      font-weight: 900;
-      padding: 24px;
-      border-radius: 55% 45% 50% 50%;
-      transform: rotate(3deg);
-    }
-
-    aside h3 {
-      margin-top: 0;
-      font-size: 20px;
-    }
-
-    .notice {
-      color: #6b7280;
-      font-size: 14px;
-      line-height: 1.4;
-    }
-
-    .selected-list {
-      background: #f3f4f6;
-      border-radius: 12px;
-      padding: 12px;
-      font-size: 14px;
-      line-height: 1.5;
-      min-height: 46px;
-      margin: 14px 0;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    label {
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    input {
-      width: 100%;
-      margin-top: 6px;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      padding: 11px 12px;
-      font-size: 15px;
-      box-sizing: border-box;
-    }
-
-    .submit {
-      border: none;
-      border-radius: 12px;
-      padding: 13px;
-      font-size: 16px;
-      font-weight: 700;
-      background: #111827;
-      color: white;
-      cursor: pointer;
-    }
-
-    .submit:disabled {
-      background: #9ca3af;
-      cursor: not-allowed;
-    }
-
-    .status {
-      margin-top: 12px;
-      padding: 12px;
-      border-radius: 12px;
-      font-size: 14px;
-      display: none;
-    }
-
-    .status.ok {
-      background: #dcfce7;
-      color: #166534;
-      display: block;
-    }
-
-    .status.error {
-      background: #fee2e2;
-      color: #991b1b;
-      display: block;
-    }
-
-    @media (max-width: 950px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-
-      header h1 {
-        font-size: 23px;
-      }
-
-      .stage {
-        font-size: 30px;
-      }
-    }
-  </style>
+<style>
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f6f1ef;color:#111827}
+header{background:#111827;color:white;text-align:center;padding:24px}
+header h1{margin:0 0 8px;font-size:28px}
+header p{margin:5px 0}
+main{max-width:1250px;margin:auto;padding:24px}
+.layout{display:grid;grid-template-columns:1fr 340px;gap:24px}
+.card{background:white;border-radius:18px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px;font-size:14px}
+.legend span{display:flex;align-items:center;gap:6px}
+.dot{width:16px;height:16px;border-radius:50%;display:inline-block}
+.seat-map{display:flex;flex-direction:column;gap:10px;min-width:900px}
+.auditorium{overflow-x:auto}
+.row{display:grid;grid-template-columns:60px 1fr 90px 1fr 60px;align-items:center;gap:10px}
+.row-label{text-align:center;font-weight:bold}
+.side{display:flex;gap:6px;justify-content:center}
+.seat{width:34px;height:32px;border:none;border-radius:8px;background:#22c55e;color:white;font-weight:bold;cursor:pointer}
+.seat.selected{background:#2563eb;outline:3px solid #111827}
+.seat.reserved{background:#ef4444;cursor:not-allowed}
+.seat.blocked{background:#9ca3af;cursor:not-allowed}
+.seat.pmr{background:#0f65b7}
+.aisle{height:36px}
+.stage{width:70%;margin:30px auto 0;background:#f5e85c;text-align:center;font-size:36px;font-weight:900;padding:24px;border-radius:50px;transform:rotate(2deg)}
+.selected-list{background:#f3f4f6;border-radius:12px;padding:12px;min-height:45px;margin:14px 0;line-height:1.5}
+input{width:100%;padding:11px;margin:6px 0 14px;border:1px solid #d1d5db;border-radius:10px;box-sizing:border-box}
+label{font-weight:bold;font-size:14px}
+button.submit{width:100%;padding:13px;border:none;border-radius:12px;background:#111827;color:white;font-weight:bold;font-size:16px;cursor:pointer}
+button.submit:disabled{background:#9ca3af;cursor:not-allowed}
+.status{display:none;margin-top:12px;padding:12px;border-radius:12px}
+.status.ok{display:block;background:#dcfce7;color:#166534}
+.status.error{display:block;background:#fee2e2;color:#991b1b}
+@media(max-width:950px){.layout{grid-template-columns:1fr}.stage{font-size:28px}}
+</style>
 </head>
 
 <body>
-  <header>
-    <h1>Concert final de curs 2025/26</h1>
-    <h2>ESMUT – Espai Musical de Terrassa</h2>
-    <p><strong>Data:</strong> 05/06/2026 · <strong>Hora:</strong> 18:00</p>
-    <p><strong>Lloc:</strong> Auditori Municipal de Terrassa</p>
-  </header>
 
-  <main>
-    <div class="layout">
-      <section class="card">
-        <div class="legend">
-          <span><i class="dot" style="background:#22c55e"></i>Lliure</span>
-          <span><i class="dot" style="background:#2563eb"></i>Seleccionat</span>
-          <span><i class="dot" style="background:#ef4444"></i>Reservat</span>
-          <span><i class="dot" style="background:#9ca3af"></i>Bloquejat</span>
-        </div>
+<header>
+<h1>Concert final de curs 2025/26</h1>
+<p><strong>ESMUT – Espai Musical de Terrassa</strong></p>
+<p><strong>Data:</strong> 05/06/2026 · <strong>Hora:</strong> 18:00</p>
+<p><strong>Lloc:</strong> Auditori Municipal de Terrassa</p>
+</header>
 
-        <div class="auditorium">
-          <div id="seatMap" class="seat-map"></div>
-        </div>
+<main>
+<div class="layout">
 
-        <div class="stage">Escenari</div>
-      </section>
+<section class="card">
+<div class="legend">
+<span><i class="dot" style="background:#22c55e"></i>Lliure</span>
+<span><i class="dot" style="background:#2563eb"></i>Seleccionat</span>
+<span><i class="dot" style="background:#ef4444"></i>Reservat</span>
+<span><i class="dot" style="background:#9ca3af"></i>Bloquejat</span>
+</div>
 
-      <aside class="card">
-        <h3>Reserva de seients</h3>
-        <p class="notice">Selecciona els seients al plànol i completa les dades de la reserva.</p>
+<div class="auditorium">
+<div id="seatMap" class="seat-map"></div>
+</div>
 
-        <div class="selected-list" id="selectedList">Cap seient seleccionat.</div>
+<div class="stage">ESCENARI</div>
+</section>
 
-        <form id="reservationForm">
-          <label>
-            Nom i cognoms
-            <input type="text" id="name" required />
-          </label>
+<aside class="card">
+<h2>Reserva de seients</h2>
+<p>Selecciona els seients al plànol i completa les dades de la reserva.</p>
 
-          <label>
-            Correu electrònic
-            <input type="email" id="email" required />
-          </label>
+<div id="selectedList" class="selected-list">Cap seient seleccionat.</div>
 
-          <label>
-            Telèfon
-            <input type="tel" id="phone" />
-          </label>
+<form id="reservationForm">
+<label>Nom i cognoms</label>
+<input type="text" id="name" required>
 
-          <button class="submit" id="submitButton" type="submit" disabled>
-            Confirmar reserva
-          </button>
-        </form>
+<label>Correu electrònic</label>
+<input type="email" id="email" required>
 
-        <div id="status" class="status"></div>
-      </aside>
-    </div>
-  </main>
+<label>Telèfon</label>
+<input type="tel" id="phone">
 
-  <script>
-const API_URL = "";
+<button class="submit" id="submitButton" type="submit" disabled>Confirmar reserva</button>
+</form>
+
+<div id="status" class="status"></div>
+</aside>
+
+</div>
+</main>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxSFh1mgfNEZXjSkBO-FoTaAOGjZC9DwAXZpKlpUCoMrMWjtx-RaOgVEvImVLUV21q9cg/exec";
 const EVENT_ID = "concert-final-curs-2025-26-05062026-1800";
 const MAX_SEATS_PER_RESERVATION = 4;
 
@@ -331,64 +106,63 @@ let selectedSeats = [];
 let reservedSeats = new Set();
 let blockedSeats = new Set();
 
-function getLeftSeats(row) {
-  if (row === 1) return [18,16,14,12,10,8,6,4,2];
-  if (row === 17) return [20,18,16,14,12,10,8,"PMR1","PMR2"];
+function getLeftSeats(row){
+  if(row===1) return [18,16,14,12,10,8,6,4,2];
+  if(row===17) return [20,18,16,14,12,10,8,"PMR1","PMR2"];
   return [20,18,16,14,12,10,8,6,4,2];
 }
 
-function getRightSeats(row) {
-  if (row === 1) return [1,3,5,7,9,11,13,15,17];
-  if (row === 17) return ["PMR3","PMR4",7,9,11,13,15,17,19];
+function getRightSeats(row){
+  if(row===1) return [1,3,5,7,9,11,13,15,17];
+  if(row===17) return ["PMR3","PMR4",7,9,11,13,15,17,19];
   return [1,3,5,7,9,11,13,15,17,19];
 }
 
-function seatId(row, seat) {
+function seatId(row, seat){
   return "F" + row + "-S" + seat;
 }
 
-function seatLabel(row, seat) {
-  if (String(seat).startsWith("PMR")) {
+function seatLabel(row, seat){
+  if(String(seat).startsWith("PMR")){
     return "Fila " + row + " – Plaça PMR";
   }
   return "Fila " + row + " – Seient " + seat;
 }
 
-function createSeatButton(row, seat) {
+function createSeatButton(row, seat){
   const id = seatId(row, seat);
-  const button = document.createElement("button");
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "seat";
+  btn.textContent = String(seat).startsWith("PMR") ? "♿" : seat;
+  btn.title = seatLabel(row, seat);
 
-  button.type = "button";
-  button.className = "seat";
-  button.textContent = String(seat).startsWith("PMR") ? "♿" : seat;
-  button.title = seatLabel(row, seat);
-
-  if (String(seat).startsWith("PMR")) {
-    button.classList.add("pmr");
+  if(String(seat).startsWith("PMR")){
+    btn.classList.add("pmr");
   }
 
-  if (reservedSeats.has(id)) {
-    button.classList.add("reserved");
-    button.disabled = true;
+  if(reservedSeats.has(id)){
+    btn.classList.add("reserved");
+    btn.disabled = true;
   }
 
-  if (blockedSeats.has(id)) {
-    button.classList.add("blocked");
-    button.disabled = true;
+  if(blockedSeats.has(id)){
+    btn.classList.add("blocked");
+    btn.disabled = true;
   }
 
-  button.addEventListener("click", function() {
-    toggleSeat(id, row, seat, button);
-  });
+  btn.onclick = function(){
+    toggleSeat(id, row, seat, btn);
+  };
 
-  return button;
+  return btn;
 }
 
-function renderSeatMap() {
+function renderSeatMap(){
   seatMapEl.innerHTML = "";
 
-  for (let row = 17; row >= 1; row--) {
-    if (row === 9) {
+  for(let row = 17; row >= 1; row--){
+    if(row === 9){
       const aisle = document.createElement("div");
       aisle.className = "aisle";
       seatMapEl.appendChild(aisle);
@@ -403,92 +177,121 @@ function renderSeatMap() {
 
     const leftSide = document.createElement("div");
     leftSide.className = "side";
-    getLeftSeats(row).forEach(function(seat) {
-      leftSide.appendChild(createSeatButton(row, seat));
-    });
+    getLeftSeats(row).forEach(seat => leftSide.appendChild(createSeatButton(row, seat)));
 
     const center = document.createElement("div");
 
     const rightSide = document.createElement("div");
     rightSide.className = "side";
-    getRightSeats(row).forEach(function(seat) {
-      rightSide.appendChild(createSeatButton(row, seat));
-    });
+    getRightSeats(row).forEach(seat => rightSide.appendChild(createSeatButton(row, seat)));
 
     const rightLabel = document.createElement("div");
     rightLabel.className = "row-label";
     rightLabel.textContent = (row === 1 || row === 10) ? "Fila " + row : row;
 
-    rowEl.appendChild(leftLabel);
-    rowEl.appendChild(leftSide);
-    rowEl.appendChild(center);
-    rowEl.appendChild(rightSide);
-    rowEl.appendChild(rightLabel);
-
+    rowEl.append(leftLabel, leftSide, center, rightSide, rightLabel);
     seatMapEl.appendChild(rowEl);
   }
 }
 
-function toggleSeat(id, row, seat, button) {
-  const existing = selectedSeats.find(function(s) {
-    return s.id === id;
-  });
+function toggleSeat(id, row, seat, btn){
+  const exists = selectedSeats.find(s => s.id === id);
 
-  if (existing) {
-    selectedSeats = selectedSeats.filter(function(s) {
-      return s.id !== id;
-    });
-    button.classList.remove("selected");
+  if(exists){
+    selectedSeats = selectedSeats.filter(s => s.id !== id);
+    btn.classList.remove("selected");
   } else {
-    if (selectedSeats.length >= MAX_SEATS_PER_RESERVATION) {
+    if(selectedSeats.length >= MAX_SEATS_PER_RESERVATION){
       showStatus("Només es poden seleccionar " + MAX_SEATS_PER_RESERVATION + " seients per reserva.", "error");
       return;
     }
-
-    selectedSeats.push({ id: id, row: row, seat: seat });
-    button.classList.add("selected");
+    selectedSeats.push({id, row, seat});
+    btn.classList.add("selected");
   }
 
   updateSelectedList();
 }
 
-function updateSelectedList() {
-  if (selectedSeats.length === 0) {
+function updateSelectedList(){
+  if(selectedSeats.length === 0){
     selectedListEl.textContent = "Cap seient seleccionat.";
     submitButton.disabled = true;
     return;
   }
 
   selectedListEl.innerHTML = selectedSeats
-    .map(function(s) {
-      return seatLabel(s.row, s.seat);
-    })
+    .map(s => seatLabel(s.row, s.seat))
     .join("<br>");
 
   submitButton.disabled = false;
 }
 
-function showStatus(message, type) {
+function showStatus(message, type){
   statusEl.className = "status " + type;
   statusEl.textContent = message;
 }
 
-function loadReservations() {
-  reservedSeats = new Set([]);
-  blockedSeats = new Set([]);
-  renderSeatMap();
+async function loadReservations(){
+  try{
+    const response = await fetch(API_URL + "?eventId=" + encodeURIComponent(EVENT_ID));
+    const data = await response.json();
+
+    reservedSeats = new Set(data.reserved || []);
+    blockedSeats = new Set(data.blocked || []);
+
+    renderSeatMap();
+  } catch(e){
+    showStatus("No s'han pogut carregar les reserves.", "error");
+    renderSeatMap();
+  }
 }
 
-document.getElementById("reservationForm").addEventListener("submit", function(event) {
-  event.preventDefault();
+document.getElementById("reservationForm").addEventListener("submit", async function(e){
+  e.preventDefault();
 
-  if (!API_URL) {
-    showStatus("La web encara està en mode demostració. Falta connectar Google Sheets.", "error");
-    return;
+  if(selectedSeats.length === 0) return;
+
+  const payload = {
+    eventId: EVENT_ID,
+    name: document.getElementById("name").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    seats: selectedSeats.map(s => s.id)
+  };
+
+  submitButton.disabled = true;
+  showStatus("Processant la reserva...", "ok");
+
+  try{
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if(!result.ok){
+      showStatus(result.message || "No s'ha pogut confirmar la reserva.", "error");
+      selectedSeats = [];
+      await loadReservations();
+      updateSelectedList();
+      return;
+    }
+
+    showStatus("Reserva confirmada correctament.", "ok");
+    selectedSeats = [];
+    document.getElementById("reservationForm").reset();
+    await loadReservations();
+    updateSelectedList();
+
+  } catch(e){
+    showStatus("Error de connexió. Torna-ho a provar.", "error");
+    submitButton.disabled = false;
   }
 });
 
 loadReservations();
 </script>
+
 </body>
 </html>
