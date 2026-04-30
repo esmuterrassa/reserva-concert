@@ -401,8 +401,7 @@
         leftLabel.className = "row-label";
         leftLabel.textContent = row === 1 || row === 10 ? `Fila ${row}` : row;
 
-        const center = document.createElement("div");
-
+        
         const rightLabel = document.createElement("div");
         rightLabel.className = "row-label";
         rightLabel.textContent = row === 1 || row === 10 ? `Fila ${row}` : row;
@@ -417,7 +416,7 @@
 
         rowEl.appendChild(leftLabel);
         rowEl.appendChild(leftSide);
-        rowEl.appendChild(center);
+        rowEl.appendChild(document.createElement("div")); // espacio central vacío
         rowEl.appendChild(rightSide);
         rowEl.appendChild(rightLabel);
 
