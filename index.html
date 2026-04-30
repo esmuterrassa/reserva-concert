@@ -59,6 +59,7 @@ button.submit:disabled{background:#9ca3af;cursor:not-allowed}
 <span><i class="dot" style="background:#ef4444"></i>Reservat</span>
 <span><i class="dot" style="background:#9ca3af"></i>Bloquejat</span>
 </div>
+ <div id="counter" style="margin-bottom:10px;font-weight:bold;"></div> 
 
 <div class="auditorium">
 <div id="seatMap" class="seat-map"></div>
@@ -220,6 +221,8 @@ function toggleSeat(id, row, seat, btn){
   }
 
   updateSelectedList();
+  showStatus("Seients seleccionats: " + selectedSeats.length, "ok");
+}
 }
 
 function updateSelectedList(){
@@ -242,8 +245,6 @@ function showStatus(message, type){
 }
 
 async function loadReservations(){
-  renderSeatMap();
-
   try{
     const response = await fetch(API_URL + "?eventId=" + encodeURIComponent(EVENT_ID));
     const data = await response.json();
@@ -252,11 +253,14 @@ async function loadReservations(){
     blockedSeats = new Set(data.blocked || []);
 
     renderSeatMap();
+
+    // 👇 AÑADIR AQUÍ
+    updateCounter();
+
   } catch(e){
     console.log("No s'han pogut carregar les reserves", e);
   }
 }
-
 document.getElementById("reservationForm").addEventListener("submit", async function(e){
   e.preventDefault();
 
@@ -308,6 +312,8 @@ document.getElementById("reservationForm").addEventListener("submit", async func
 });
 
 loadReservations();
+  // Actualización automática cada 5 segundos
+setInterval(loadReservations, 5000);
 </script>
 
 </body>
