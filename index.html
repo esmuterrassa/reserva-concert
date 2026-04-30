@@ -284,19 +284,25 @@ document.getElementById("reservationForm").addEventListener("submit", async func
   submitButton.disabled = true;
 
   try {
-    await fetch(API_URL + "?" + params.toString(), { method: "GET" });
+    const response = await fetch(API_URL + "?" + params.toString());
+    const result = await response.json();
+
+    if(!result.ok){
+      showStatus("Error en la reserva.", "error");
+      submitButton.disabled = false;
+      return;
+    }
 
     selectedSeats = [];
     document.getElementById("reservationForm").reset();
 
-    setTimeout(async function(){
-      await loadReservations();
-      updateSelectedList();
-      showStatus("Reserva confirmada correctament.", "ok");
-    }, 1500);
+    await loadReservations();
+    updateSelectedList();
+
+    showStatus("Reserva confirmada correctament.", "ok");
 
   } catch(e) {
-    showStatus("Error de connexió. Torna-ho a provar.", "error");
+    showStatus("Error de connexió.", "error");
     submitButton.disabled = false;
   }
 });
