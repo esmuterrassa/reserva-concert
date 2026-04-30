@@ -16,8 +16,8 @@ main{max-width:1250px;margin:auto;padding:24px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px;font-size:14px}
 .legend span{display:flex;align-items:center;gap:6px}
 .dot{width:16px;height:16px;border-radius:50%;display:inline-block}
-.seat-map{display:flex;flex-direction:column;gap:10px;min-width:900px}
 .auditorium{overflow-x:auto}
+.seat-map{display:flex;flex-direction:column;gap:10px;min-width:900px}
 .row{display:grid;grid-template-columns:60px 1fr 90px 1fr 60px;align-items:center;gap:10px}
 .row-label{text-align:center;font-weight:bold}
 .side{display:flex;gap:6px;justify-content:center}
@@ -132,6 +132,7 @@ function seatLabel(row, seat){
 function createSeatButton(row, seat){
   const id = seatId(row, seat);
   const btn = document.createElement("button");
+
   btn.type = "button";
   btn.className = "seat";
   btn.textContent = String(seat).startsWith("PMR") ? "♿" : seat;
@@ -177,35 +178,44 @@ function renderSeatMap(){
 
     const leftSide = document.createElement("div");
     leftSide.className = "side";
-    getLeftSeats(row).forEach(seat => leftSide.appendChild(createSeatButton(row, seat)));
+    getLeftSeats(row).forEach(function(seat){
+      leftSide.appendChild(createSeatButton(row, seat));
+    });
 
     const center = document.createElement("div");
 
     const rightSide = document.createElement("div");
     rightSide.className = "side";
-    getRightSeats(row).forEach(seat => rightSide.appendChild(createSeatButton(row, seat)));
+    getRightSeats(row).forEach(function(seat){
+      rightSide.appendChild(createSeatButton(row, seat));
+    });
 
     const rightLabel = document.createElement("div");
     rightLabel.className = "row-label";
     rightLabel.textContent = (row === 1 || row === 10) ? "Fila " + row : row;
 
-    rowEl.append(leftLabel, leftSide, center, rightSide, rightLabel);
+    rowEl.appendChild(leftLabel);
+    rowEl.appendChild(leftSide);
+    rowEl.appendChild(center);
+    rowEl.appendChild(rightSide);
+    rowEl.appendChild(rightLabel);
+
     seatMapEl.appendChild(rowEl);
   }
 }
 
 function toggleSeat(id, row, seat, btn){
-  const exists = selectedSeats.find(s => s.id === id);
+  const exists = selectedSeats.find(function(s){ return s.id === id; });
 
   if(exists){
-    selectedSeats = selectedSeats.filter(s => s.id !== id);
+    selectedSeats = selectedSeats.filter(function(s){ return s.id !== id; });
     btn.classList.remove("selected");
   } else {
     if(selectedSeats.length >= MAX_SEATS_PER_RESERVATION){
       showStatus("Només es poden seleccionar " + MAX_SEATS_PER_RESERVATION + " seients per reserva.", "error");
       return;
     }
-    selectedSeats.push({id, row, seat});
+    selectedSeats.push({id:id,row:row,seat:seat});
     btn.classList.add("selected");
   }
 
@@ -219,9 +229,9 @@ function updateSelectedList(){
     return;
   }
 
-  selectedListEl.innerHTML = selectedSeats
-    .map(s => seatLabel(s.row, s.seat))
-    .join("<br>");
+  selectedListEl.innerHTML = selectedSeats.map(function(s){
+    return seatLabel(s.row, s.seat);
+  }).join("<br>");
 
   submitButton.disabled = false;
 }
@@ -232,6 +242,8 @@ function showStatus(message, type){
 }
 
 async function loadReservations(){
+  renderSeatMap();
+
   try{
     const response = await fetch(API_URL + "?eventId=" + encodeURIComponent(EVENT_ID));
     const data = await response.json();
@@ -241,8 +253,7 @@ async function loadReservations(){
 
     renderSeatMap();
   } catch(e){
-    showStatus("No s'han pogut carregar les reserves.", "error");
-    renderSeatMap();
+    console.log("No s'han pogut carregar les reserves", e);
   }
 }
 
@@ -256,36 +267,34 @@ document.getElementById("reservationForm").addEventListener("submit", async func
     name: document.getElementById("name").value.trim(),
     email: document.getElementById("email").value.trim(),
     phone: document.getElementById("phone").value.trim(),
-    seats: selectedSeats.map(s => s.id)
+    seats: selectedSeats.map(function(s){ return s.id; })
   };
 
+  if(!payload.name || !payload.email){
+    showStatus("Cal indicar nom i correu electrònic.", "error");
+    return;
+  }
+
   submitButton.disabled = true;
-  showStatus("Processant la reserva...", "ok");
+  showStatus("Enviant reserva...", "ok");
 
   try{
     await fetch(API_URL, {
-  method: "POST",
-  mode: "no-cors",
-  body: JSON.stringify(payload)
-});
+      method: "POST",
+      mode: "no-cors",
+      body: JSON.stringify(payload)
+    });
 
-showStatus("Reserva enviada correctament. Comprovant disponibilitat...", "ok");
+    showStatus("Reserva enviada. Actualitzant plànol...", "ok");
 
-selectedSeats = [];
-document.getElementById("reservationForm").reset();
-
-setTimeout(async function(){
-  await loadReservations();
-  updateSelectedList();
-  showStatus("Reserva confirmada correctament.", "ok");
-}, 2000);
-    }
-
-    showStatus("Reserva confirmada correctament.", "ok");
     selectedSeats = [];
     document.getElementById("reservationForm").reset();
-    await loadReservations();
-    updateSelectedList();
+
+    setTimeout(async function(){
+      await loadReservations();
+      updateSelectedList();
+      showStatus("Reserva confirmada correctament.", "ok");
+    }, 2000);
 
   } catch(e){
     showStatus("Error de connexió. Torna-ho a provar.", "error");
